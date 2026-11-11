@@ -13,17 +13,35 @@ News API) it also polls Blue Ocean's overnight session live for the stocks open 
 (`tiingoboats`, tiingo (blue ocean)). Both feeds share the key's limits: one rate window, one daily
 cap, one count of different symbols a month.
 
-A Liminal provider plugin released on its own: a class each on the class contract (plugin API 2.0),
+A Liminal provider plugin released on its own: a class each on the class contract (plugin API 2.2),
 `TiingoPlugin` and `TiingoForex`, both `TiingoFeed` (a `FeedPlugin`, what the two share). The app finds it
 through the entry point group `liminal.providers` and lists it on the Plugins view and in
 `liminal-charts plugins` as `package: plugin-integrator-tiingo`, with this package's version.
+
+## Its API
+
+Both feeds attach to Tiingo's REST API at `https://api.tiingo.com`, the token sent as `Authorization: Token`. The
+card on its page in every app (`apis`, plugin API 2.2: `src/plugin_integrator_tiingo/apis.py`, read from Tiingo's
+pages on 2026-11-11) says what the API is, its limits and prices, every part of it and every call made here:
+
+- Documentation: <https://www.tiingo.com/documentation/general/overview> (connecting:
+  <https://www.tiingo.com/documentation/general/connecting>)
+- Pricing and limits: <https://www.tiingo.com/about/pricing> (Starter, free: 50 requests an hour, 1,000 a day, 500
+  symbols and 1 GB a month; Power and Commercial far more)
+- Status: <https://status.tiingo.com>, uptime at <https://uptime.tiingo.com>
+- Changelog: <https://www.tiingo.com/documentation/general/changelog>
+- API token: <https://www.tiingo.com/account/api/token>
+
+Used here: the end-of-day prices and records (and the supported-tickers file), the forex minutes, Blue Ocean's
+overnight top of book and minutes, and, by the scan only, IEX, crypto, news and fundamentals. Not used: the 24x5
+consolidated feed, fund fees, dividends, splits, search and the WebSockets.
 
 ## Install
 
 Into the app's environment, from the app's folder:
 
 ```powershell
-.venv\Scripts\python.exe -m pip install "plugin-integrator-tiingo @ git+https://github.com/pcxmac-dev/plugin-integrator-tiingo@v0.2.0"
+.venv\Scripts\python.exe -m pip install "plugin-integrator-tiingo @ git+https://github.com/pcxmac-dev/plugin-integrator-tiingo@v0.3.0"
 ```
 
 or with the app's plugins (`pip install -e ".[plugins]"` in liminal-charts). The app loads it on its next
@@ -43,10 +61,11 @@ so turn it on for the listing and off again on a plan of 1 GB a month.
 
 ## Compatibility
 
-It is written for plugin API 2.0 (each feed's `api`: the class contract of liminal-libs 1.3.0, a plugin
+It is written for plugin API 2.2 (each feed's `api`: the class contract of liminal-libs 1.3.0, a plugin
 an instance of a `FeedPlugin` subclass; the exchanges a feed carries, `exchanges`; the machine-wide
-ledger and the session calendar reached through the contract). An app offering 2.0 or a later 2.x loads
-it; an app of another major leaves it out and says why on the Plugins view.
+ledger and the session calendar reached through the contract; the API cards of liminal-libs 1.49.0). An
+app offering 2.2 or a later 2.x loads it; an app offering an older 2.x, or another major, leaves it out
+and says why on the Plugins view.
 
 ## Develop
 
@@ -57,4 +76,5 @@ python -m venv .venv
 .venv\Scripts\python.exe -m pytest -q
 ```
 
-Tests never send requests (a fake client answers) and never read your keys.
+Tests never send requests (a fake client answers) and never read your keys. One test asks every address on the
+API's card, only with `LIMINAL_VENDOR_PAGES=1` set.

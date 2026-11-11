@@ -1,6 +1,6 @@
 """The Tiingo plugin, run against the app installed beside it: its daily bars and their split
 adjustment, its forex windows, its plans, its Blue Ocean poller's reading, and the app loading its
-two feeds from this package (TiingoPlugin and TiingoForex, plugin API 2.0) with its own version and the
+two feeds from this package (TiingoPlugin and TiingoForex, plugin API 2.2) with its own version and the
 facts they had as built-ins."""
 from __future__ import annotations
 
@@ -187,6 +187,18 @@ def test_the_night_is_polled_only_on_a_paid_plan_with_live_stocks_online_and_its
     assert poller.night(datetime(2026, 10, 28, 12, 0, tzinfo=ET)) is None  # by day
 
 
+def own_version(origin: str) -> str:
+    """This distribution's version as the registry read it: its checkout's pyproject.toml when loaded from the
+    workspace's plugin directory, else the installed package's (an editable install's record keeps the version it
+    was installed at until it is installed again)."""
+    if origin.startswith("plugins/"):
+        import tomllib
+        from pathlib import Path
+
+        return tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+    return version("plugin-integrator-tiingo")
+
+
 def test_the_app_loads_its_two_feeds_from_this_package_with_its_own_version():
     registry.reload()
     assert [p.name for p in tiingo.PLUGINS] == ["tiingo", "tiingofx"] and not hasattr(tiingo, "PLUGIN")
@@ -194,19 +206,19 @@ def test_the_app_loads_its_two_feeds_from_this_package_with_its_own_version():
         p = provider(name)
         assert p is not None, dict(registry.errors())
         assert p.origin in {"package: plugin-integrator-tiingo (plugin_integrator_tiingo)", "plugins/plugin-integrator-tiingo (plugin_integrator_tiingo)"}  # its package, or its checkout in the workspace\'s plugin directory
-        assert p.version == version("plugin-integrator-tiingo") and p.api == "2.0"
+        assert p.version == own_version(p.origin) and p.api == "2.2"
         assert registry.api_refusal(p.api) is None
     assert tiingo.TIINGO.version == "" and tiingo.FOREX.version == ""
     assert not [why for where, why in registry.errors() if "tiingo" in where or "tiingo" in why]
     row = {r["name"]: r for r in registry.menu()}["tiingo"]
-    assert (row["version"], row["api"]) == (version("plugin-integrator-tiingo"), "2.0")
+    assert (row["version"], row["api"]) == (own_version(p.origin), "2.2")
     assert registry.plugin_feeds("tiingo") == ["tiingo", "tiingofx"] and registry.plugin_of("tiingofx") == "tiingo"
 
 
-def test_its_feeds_are_classes_on_plugin_api_2_0_and_the_app_loads_them_as_such():
+def test_its_feeds_are_classes_on_plugin_api_2_2_and_the_app_loads_them_as_such():
     assert isinstance(TIINGO, TiingoPlugin) and isinstance(FOREX, TiingoForex) and tiingo.PLUGINS == (TIINGO, FOREX)
     assert isinstance(TIINGO, TiingoFeed) and isinstance(FOREX, TiingoFeed)  # one plugin: what both share
-    assert TIINGO.api == "2.0" == FOREX.api and not TIINGO.is_record and not FOREX.is_record
+    assert TIINGO.api == "2.2" == FOREX.api and not TIINGO.is_record and not FOREX.is_record
     assert FOREX.keys is TIINGO.keys and FOREX.signup == TIINGO.signup and FOREX.part_of == "tiingo" == FOREX.account
     assert TIINGO.has_scan and not FOREX.has_scan  # the forex has no scan of its own, as before
     assert TIINGO.gives("reporter") and not FOREX.gives("reporter") and not TIINGO.has_settings and not FOREX.has_settings

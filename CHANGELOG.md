@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0 (2026-11-11)
+
+Its API on its page (plugin API 2.2, liminal-libs 1.49.0; the user: "each plugin should reflect the the API its
+attached to, and present links that provide documentation, the plugin interface should more or less contain what it
+already has, BUT, it should also expose more of what the API is about"). Both feeds declare one card (`apis`, from
+`apis.py`: `TIINGO_REST`, set on `TiingoFeed`), Tiingo's REST API as Tiingo's pages said on 2026-11-11: what it is
+and for, its address, the token's form, its plans' limits (Starter 50 requests an hour and 1,000 a day, Power 10,000
+and 100,000, Commercial 20,000 and 150,000, with their symbols and bandwidth a month) and prices, and Tiingo's pages
+(the documentation, connecting, symbology, pricing, the status and uptime pages, the changelog, the API token page,
+the terms). Its 13 parts, the documentation's sections with the WebSockets, say what is used here (7) and what is
+not; its 25 calls the 10 made here (the supported-tickers file among them), each with what for, beside the notable
+others. `signup` is the API token page's address (a link on the Plugins view). `api_facts` says nothing (the
+contract's): the plugin holds no run's state. Tiingo's site answers any address under its documentation with a page,
+so each page on the card was read, not only asked for. Tests: the card names every call the plugin makes and none it
+does not; every address on it answers (with `LIMINAL_VENDOR_PAGES=1`). Nothing it fetches changed. Requires
+liminal-libs 1.49.0.
+
 ## 0.2.0 (2026-11-03)
 
 Renamed `plugin-integrator-tiingo` (the package `plugin_integrator_tiingo`; it was `liminal-plugin-tiingo`) on 2026-11-03: the naming by system (plugins are `plugin-<app>-<name>`), on liminal-libs 1.4.0 (`liminal_libs`, the library renamed with it).

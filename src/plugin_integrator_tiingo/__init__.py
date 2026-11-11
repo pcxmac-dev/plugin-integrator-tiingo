@@ -4,13 +4,20 @@ of this plugin on the same key), and Blue Ocean's overnight nights polled live o
 
 A Liminal plugin released on its own, registered under the entry point group `liminal.providers` as
 `tiingo`: one plugin, two feeds (PLUGINS: the stocks' daily archive `tiingo`, its forex `tiingofx`),
-a class each on the class contract (plugin API 2.0, liminal_libs.sources.plugin: what a feed declares
+a class each on the class contract (plugin API 2.2, liminal_libs.sources.plugin: what a feed declares
 class attributes, what it does methods): `TiingoPlugin` (TIINGO) and `TiingoForex` (FOREX) share the
 base `TiingoFeed`, which holds what both declare and do alike (the key, the plan's view of the
-settings, the window kept, the client: one account's limits). It relies on plugin API 2.0 (the
-exchanges a feed carries, `exchanges`, so a listing abroad, 600519.SS, comes to it and to no US feed)
-and nothing of the app outside it (docs/ARCHITECTURE.md in liminal: "Providers are plugins"); its
-version is this distribution's (pyproject.toml), so the classes' versions are left empty.
+settings, the window kept, the client: one account's limits). It relies on plugin API 2.2 (the
+exchanges a feed carries, `exchanges`, so a listing abroad, 600519.SS, comes to it and to no US feed;
+what it attaches to, `apis`) and nothing of the app outside it (docs/ARCHITECTURE.md in liminal:
+"Providers are plugins"); its version is this distribution's (pyproject.toml), so the classes'
+versions are left empty.
+
+What it attaches to (plugin API 2.2, `apis`: the card in apis.py, both feeds' alike): Tiingo's REST
+API, its documentation, pricing and status pages, every part of it (each section of its
+documentation, the WebSockets among them) said used here or not, and its calls, the ones made here
+first. What it learned of the API while it ran it does not say (api_facts, the contract's: nothing):
+the instances hold no run's state, the requests of a run are its client's and the machine's ledgers'.
 
 Its scan (`capabilities`, one request each) asks what else the account's plan gives: IEX's minute
 bars (one exchange), forex and crypto bars, and Blue Ocean's overnight bars (a paid add-on,
@@ -37,6 +44,7 @@ from liminal_libs.sources.archive import ET
 from liminal_libs.sources.http import PublicClient
 from liminal_libs.sources.registry import FeedPlugin, KeyVar, MachineLedger, Scanned, limiter, machine_caps
 from liminal_libs.sources.stream import Live, session_at
+from .apis import APIS, TOKEN
 from .client import TiingoFxSource, TiingoSource
 
 API = "https://api.tiingo.com"
@@ -224,11 +232,13 @@ class TiingoFeed(FeedPlugin):
     """What Tiingo's two feeds declare and do alike, on one account's key: where it is made and whether
     it is set, the plan's view of the app's settings (TIINGO_PLAN's caps and tier: `view`), the window
     the limiter keeps (`rate`: Starter's 50 an hour), and the client on the key, its window and day cap
-    held for the machine under Tiingo's name (`client`: one account's limits, for both feeds)."""
+    held for the machine under Tiingo's name (`client`: one account's limits, for both feeds), and what
+    both attach to (`apis`: Tiingo's REST API)."""
 
-    api = "2.0"  # the contract this plugin is written for (the classes; exchanges; MachineLedger, session_at); its version: the distribution's
+    api = "2.2"  # the contract this plugin is written for (the classes; exchanges; MachineLedger, session_at; its API's card); its version: the distribution's
     keys = (KeyVar(KEY),)
-    signup = "tiingo.com: a free account's API token"
+    signup = TOKEN  # the account's API token page (the card's console link; a free account's token)
+    apis = APIS  # Tiingo's REST API (apis.py), the stocks' and the forex's
 
     def view(self, base):
         tier, per_run, per_day, _ = PLANS[plan_of(base)]
